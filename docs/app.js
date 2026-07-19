@@ -136,6 +136,12 @@ function formatLongDate(s) {
 function monthLabel({ year, month }) {
   return new Date(year, month, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toUpperCase();
 }
+const WEEKDAYS_SHORT = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const MONTHS_SHORT = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function formatHeaderDate(s) {
+  const d = parseDateStr(s);
+  return `${WEEKDAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+}
 
 // ============================================================================
 // Screen switching
@@ -348,8 +354,17 @@ function initTodayState() {
 // ============================================================================
 // Today view
 // ============================================================================
-const RING_R = 34;
+const RING_R = 24;
 const RING_C = 2 * Math.PI * RING_R;
+
+function createDayHeader() {
+  const day = PROGRAM[state.selectedDay];
+  const text = h('div', {}, [
+    h('div', { class: 'day-header-date mono', text: formatHeaderDate(todayISO()) }),
+    h('h2', { class: 'day-header-title', text: day.label }),
+  ]);
+  return h('div', { class: 'day-header' }, [text, createCompletionRing()]);
+}
 
 function createStatRow() {
   const row = h('div', { class: 'stat-row' });
@@ -368,32 +383,29 @@ function createStatRow() {
   return row;
 }
 
-function createRingCard() {
+function createCompletionRing() {
   const { logged, total } = computeCompletion();
   const pct = total > 0 ? Math.min(1, logged / total) : 0;
-  const card = h('div', { class: 'ring-card' });
-  card.innerHTML = `
-    <svg class="ring-svg" width="84" height="84" viewBox="0 0 84 84">
+  const wrap = h('div', { class: 'ring-compact', title: 'Mandatory sets logged' });
+  wrap.innerHTML = `
+    <svg class="ring-svg" width="56" height="56" viewBox="0 0 56 56">
       <defs>
         <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#2563EB"/>
           <stop offset="100%" stop-color="#38BDF8"/>
         </linearGradient>
       </defs>
-      <circle cx="42" cy="42" r="${RING_R}" fill="none" stroke="var(--surface-2)" stroke-width="8"/>
-      <circle id="ring-progress-circle" cx="42" cy="42" r="${RING_R}" fill="none" stroke="url(#ringGrad)" stroke-width="8"
+      <circle cx="28" cy="28" r="${RING_R}" fill="none" stroke="var(--surface-2)" stroke-width="6"/>
+      <circle id="ring-progress-circle" cx="28" cy="28" r="${RING_R}" fill="none" stroke="url(#ringGrad)" stroke-width="6"
         stroke-linecap="round" stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C}"
-        transform="rotate(-90 42 42)"/>
+        transform="rotate(-90 28 28)"/>
     </svg>
-    <div>
-      <div class="ring-label">Mandatory sets logged</div>
-      <div class="ring-count mono" id="ring-count-text">${logged} / ${total}</div>
-    </div>`;
+    <span class="ring-compact-text mono" id="ring-count-text">${logged}/${total}</span>`;
   requestAnimationFrame(() => {
-    const circle = card.querySelector('#ring-progress-circle');
+    const circle = wrap.querySelector('#ring-progress-circle');
     if (circle) circle.style.strokeDashoffset = String(RING_C * (1 - pct));
   });
-  return card;
+  return wrap;
 }
 
 function updateStatsAndRing() {
@@ -404,7 +416,7 @@ function updateStatsAndRing() {
 
   const { logged, total } = computeCompletion();
   const countText = document.getElementById('ring-count-text');
-  if (countText) countText.textContent = `${logged} / ${total}`;
+  if (countText) countText.textContent = `${logged}/${total}`;
   const circle = document.getElementById('ring-progress-circle');
   if (circle) {
     const pct = total > 0 ? Math.min(1, logged / total) : 0;
@@ -447,13 +459,11 @@ function createSetRow(ex, setNumber) {
   const row = h('div', { class: 'set-row' });
   row.appendChild(h('span', { class: 'set-index mono', text: String(setNumber) }));
 
-  const repsInput = h('input', { type: 'number', inputmode: 'numeric', min: '0' });
-  repsInput.value = prefill.reps;
-  const repsGroup = h('div', { class: 'set-input-group' }, [h('label', { text: 'Reps' }), repsInput]);
-
-  const weightInput = h('input', { type: 'number', inputmode: 'decimal', min: '0', step: '0.5' });
+  const weightInput = h('input', { class: 'set-input', type: 'number', inputmode: 'decimal', min: '0', step: '0.5', placeholder: 'Weight' });
   weightInput.value = prefill.weight;
-  const weightGroup = h('div', { class: 'set-input-group' }, [h('label', { text: 'Kg' }), weightInput]);
+
+  const repsInput = h('input', { class: 'set-input', type: 'number', inputmode: 'numeric', min: '0', placeholder: 'Reps' });
+  repsInput.value = prefill.reps;
 
   const logBtn = h('button', {
     class: 'set-log-btn' + (prefill.logged ? ' logged' : ''),
@@ -463,8 +473,8 @@ function createSetRow(ex, setNumber) {
   });
   logBtn.addEventListener('click', () => logSetHandler(ex.name, setNumber, repsInput.value, weightInput.value, logBtn));
 
-  row.appendChild(repsGroup);
-  row.appendChild(weightGroup);
+  row.appendChild(weightInput);
+  row.appendChild(repsInput);
   row.appendChild(logBtn);
   return row;
 }
@@ -550,11 +560,10 @@ function createExerciseCard(ex) {
 
 function renderTodayView(root) {
   root.innerHTML = '';
+  root.appendChild(createDayHeader());
   root.appendChild(createStatRow());
-  root.appendChild(createRingCard());
   root.appendChild(createDayPicker());
   const day = PROGRAM[state.selectedDay];
-  root.appendChild(h('h2', { class: 'section-title', text: day.label }));
   for (const ex of day.exercises) root.appendChild(createExerciseCard(ex));
 }
 

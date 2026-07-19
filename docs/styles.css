@@ -165,27 +165,35 @@ button { font-family: var(--font-body); }
 .tab-bar {
   flex: 0 0 auto;
   display: flex;
+  gap: 4px;
   border-top: 1px solid var(--border);
   background: var(--surface-1);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   position: sticky;
   bottom: 0;
 }
 .tab-btn {
   flex: 1;
+  min-height: 52px;
   background: transparent;
   border: none;
+  border-radius: 10px;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 0 8px;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   font-family: var(--font-body);
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.tab-btn.active { color: var(--accent-high); }
+.tab-btn.active { color: var(--accent-high); background: rgba(37, 99, 235, 0.14); }
 
 /* ---------- Section headings ---------- */
 .section-title {
@@ -215,20 +223,23 @@ button { font-family: var(--font-body); }
 .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
 .stat-value { font-size: 26px; color: var(--text-data); margin-top: 4px; font-weight: 700; }
 
-/* ---------- Completion ring ---------- */
-.ring-card {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
+/* ---------- Day header + completion ring ---------- */
+.day-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.day-header-date { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.05em; margin-bottom: 4px; }
+.day-header-title { font-size: 28px; line-height: 1.05; }
+.ring-compact { position: relative; width: 56px; height: 56px; flex: 0 0 auto; }
+.ring-compact svg { display: block; }
+.ring-svg circle { transition: stroke-dashoffset 0.6s ease; }
+.ring-compact-text {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-data);
 }
-.ring-svg circle { transition: stroke-dashoffset 0.6s ease; }
-.ring-label { font-size: 13px; color: var(--text-secondary); }
-.ring-count { font-size: 24px; color: var(--text-data); font-weight: 700; margin-top: 2px; }
 
 /* ---------- Day picker ---------- */
 .day-picker { display: flex; gap: 8px; margin-bottom: 18px; overflow-x: auto; }
@@ -243,7 +254,7 @@ button { font-family: var(--font-body); }
   text-align: left;
   color: var(--text-primary);
 }
-.day-pill.selected { border-color: var(--border-active); background: var(--surface-2); }
+.day-pill.selected { border: 1px solid var(--accent); background: var(--surface-2); box-shadow: 0 0 0 1px var(--border-active); }
 .day-pill-label { font-size: 13px; font-weight: 700; display: block; line-height: 1.2; }
 .day-pill-meta { font-size: 11px; color: var(--text-secondary); display: block; margin-top: 3px; }
 
@@ -268,13 +279,14 @@ button { font-family: var(--font-body); }
 .badge {
   font-size: 10px;
   font-family: var(--font-mono);
-  padding: 3px 7px;
+  padding: 4px 8px;
   border-radius: 100px;
   border: 1px solid var(--border);
+  background: var(--surface-2);
   color: var(--text-secondary);
   white-space: nowrap;
 }
-.badge-optional { color: var(--amber); border-color: var(--amber); }
+.badge-optional { color: var(--amber); border-color: var(--amber); background: rgba(245, 166, 35, 0.12); }
 .chevron { color: var(--text-secondary); transition: transform 0.2s ease; flex: 0 0 auto; }
 .exercise-card.expanded .chevron { transform: rotate(180deg); }
 
@@ -282,23 +294,23 @@ button { font-family: var(--font-body); }
 .exercise-card.expanded .exercise-body { max-height: 3000px; }
 
 .set-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-.set-index { width: 22px; text-align: center; color: var(--text-secondary); font-size: 13px; }
-.set-input-group { flex: 1; display: flex; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
-.set-input-group label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; }
-.set-input-group input {
-  width: 100%;
-  background: transparent;
-  border: none;
+.set-index { width: 18px; flex: 0 0 auto; text-align: center; color: var(--text-secondary); font-size: 13px; }
+.set-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 12px;
   color: var(--text-data);
   font-size: 15px;
-  text-align: right;
-  padding: 2px 0;
 }
-.set-input-group input:focus { outline: none; }
+.set-input::placeholder { color: var(--text-secondary); font-family: var(--font-body); font-weight: 400; }
+.set-input:focus { outline: none; border-color: var(--border-active); }
 .set-log-btn {
   flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -317,8 +329,9 @@ button { font-family: var(--font-body); }
   border: 1px dashed var(--border);
   border-radius: 8px;
   color: var(--text-secondary);
-  padding: 8px;
+  padding: 11px;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 .add-set-btn:hover { color: var(--text-primary); border-color: var(--text-secondary); }
