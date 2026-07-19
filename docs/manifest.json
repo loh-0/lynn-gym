@@ -1,6 +1,6 @@
 {
-  "name": "Ice & Iron — Gym Tracker",
-  "short_name": "Ice & Iron",
+  "name": "Gym Tracker",
+  "short_name": "Gym Tracker",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
